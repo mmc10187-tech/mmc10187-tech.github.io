@@ -1,4 +1,11 @@
-<!DOCTYPE html>
+python3 << 'EOF'
+import json, os
+
+with open('/tmp/imgs2.json') as f:
+    imgs = json.load(f)
+
+# Build the new HTML from scratch with vertical photo stack and updated bio
+html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -8,77 +15,69 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+:root{{
   --serif:'Cormorant Garamond',Georgia,serif;
   --sans:'Montserrat',sans-serif;
-}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;cursor:none}
-a{color:inherit;text-decoration:none}
+}}
+html,body{{width:100%;height:100%;overflow:hidden;background:#000;cursor:none}}
+a{{color:inherit;text-decoration:none}}
 
-/* ── Cursor ── */
-#cur{
+#cur{{
   position:fixed;width:7px;height:7px;
   background:#fff;border-radius:50%;
   pointer-events:none;z-index:99999;
   transform:translate(-50%,-50%);
   mix-blend-mode:difference;
-}
+}}
 
-/* ── Pages ── */
-.page{position:fixed;inset:0;opacity:0;pointer-events:none;transition:opacity .6s ease}
-.page.active{opacity:1;pointer-events:all}
+.page{{position:fixed;inset:0;opacity:0;pointer-events:none;transition:opacity .6s ease}}
+.page.active{{opacity:1;pointer-events:all}}
 
 /* ══ HOME ══ */
-#page-home{background:#000;overflow:hidden}
-
-.vid-bg{position:absolute;inset:0;overflow:hidden}
-.vid-bg iframe{
-  position:absolute;
-  top:50%;left:50%;
+#page-home{{background:#000;overflow:hidden}}
+.vid-bg{{position:absolute;inset:0;overflow:hidden}}
+.vid-bg iframe{{
+  position:absolute;top:50%;left:50%;
   width:max(100vw, 177.78vh);
   height:max(100vh, 56.25vw);
   transform:translate(-50%,-50%);
   border:0;pointer-events:none;opacity:.55;
-}
-.vid-overlay{
-  position:absolute;inset:0;
-  background:rgba(0,0,0,.48);
-  z-index:1;
-}
-.home-center{
+}}
+.vid-overlay{{position:absolute;inset:0;background:rgba(0,0,0,.48);z-index:1}}
+.home-center{{
   position:absolute;inset:0;z-index:2;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   pointer-events:none;text-align:center;
-}
-.home-name{
+}}
+.home-name{{
   font-family:var(--serif);
   font-size:clamp(4rem,10vw,11rem);
   font-weight:300;color:#fff;
   letter-spacing:.07em;line-height:1;
-}
-.home-name em{font-style:italic}
-.home-sub{
+}}
+.home-name em{{font-style:italic}}
+.home-sub{{
   margin-top:1.8rem;
   font-family:var(--sans);
   font-size:.57rem;font-weight:300;
   letter-spacing:.38em;text-transform:uppercase;
   color:rgba(255,255,255,.33);
-}
+}}
 
 /* ══ TOP BAR ══ */
-#mc-logo{
+#mc-logo{{
   position:fixed;top:1.75rem;left:2rem;
   z-index:2000;
   font-family:var(--serif);font-size:1.25rem;
   font-weight:400;letter-spacing:.06em;
   color:rgba(255,255,255,.85);cursor:pointer;
   transition:color .2s;
-}
-#mc-logo:hover{color:#fff}
+}}
+#mc-logo:hover{{color:#fff}}
 
-#work-btn{
+#work-btn{{
   position:fixed;top:1.6rem;right:2.4rem;
   z-index:2000;
   font-family:var(--sans);
@@ -89,19 +88,18 @@ a{color:inherit;text-decoration:none}
   transition:color .2s;
   padding:4px 0;
   display:flex;align-items:center;gap:.55rem;
-}
-#work-btn:hover,#work-btn.open{color:#fff}
-#work-btn .chev{
-  display:inline-block;
-  width:7px;height:7px;
+}}
+#work-btn:hover,#work-btn.open{{color:#fff}}
+#work-btn .chev{{
+  display:inline-block;width:7px;height:7px;
   border-right:1px solid currentColor;
   border-bottom:1px solid currentColor;
   transform:rotate(45deg) translateY(-2px);
   transition:transform .25s ease;
-}
-#work-btn.open .chev{transform:rotate(-135deg) translateY(-2px)}
+}}
+#work-btn.open .chev{{transform:rotate(-135deg) translateY(-2px)}}
 
-#close-btn{
+#close-btn{{
   position:fixed;top:1.75rem;right:2.4rem;
   z-index:2000;
   font-family:var(--sans);
@@ -109,29 +107,23 @@ a{color:inherit;text-decoration:none}
   color:rgba(255,255,255,.32);cursor:pointer;
   display:none;align-items:center;gap:.7rem;
   transition:color .2s;
-}
-#close-btn.show{display:flex}
-#close-btn::before{content:'';width:26px;height:1px;background:rgba(255,255,255,.22);transition:width .3s}
-#close-btn:hover{color:rgba(255,255,255,.8)}
-#close-btn:hover::before{width:44px}
+}}
+#close-btn.show{{display:flex}}
+#close-btn::before{{content:'';width:26px;height:1px;background:rgba(255,255,255,.22);transition:width .3s}}
+#close-btn:hover{{color:rgba(255,255,255,.8)}}
+#close-btn:hover::before{{width:44px}}
 
 /* ══ DROPDOWN ══ */
-#dropdown{
-  position:fixed;
-  top:3.6rem;
-  right:2.4rem;
+#dropdown{{
+  position:fixed;top:3.6rem;right:2.4rem;
   z-index:1999;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-end;
-  opacity:0;
-  pointer-events:none;
+  display:flex;flex-direction:column;align-items:flex-end;
+  opacity:0;pointer-events:none;
   transform:translateY(-6px);
   transition:opacity .25s ease, transform .25s ease;
-}
-#dropdown.open{opacity:1;pointer-events:all;transform:translateY(0)}
-
-.dd-item{
+}}
+#dropdown.open{{opacity:1;pointer-events:all;transform:translateY(0)}}
+.dd-item{{
   font-family:var(--sans);
   font-size:.58rem;font-weight:300;
   letter-spacing:.28em;text-transform:uppercase;
@@ -142,277 +134,160 @@ a{color:inherit;text-decoration:none}
   transition:color .2s;
   white-space:nowrap;
   position:relative;
-}
-.dd-item::after{
-  content:'';
-  position:absolute;bottom:0;right:0;
-  width:0;height:1px;
-  background:rgba(255,255,255,.15);
+}}
+.dd-item::after{{
+  content:'';position:absolute;bottom:0;right:0;
+  width:0;height:1px;background:rgba(255,255,255,.15);
   transition:width .3s ease;
-}
-.dd-item:hover{color:#fff}
-.dd-item:hover::after{width:100%}
-.dd-num{
-  font-family:var(--serif);
-  font-size:.72rem;font-style:italic;
-  color:rgba(255,255,255,.2);
-  margin-right:.6rem;
-}
+}}
+.dd-item:hover{{color:#fff}}
+.dd-item:hover::after{{width:100%}}
+.dd-num{{font-family:var(--serif);font-size:.72rem;font-style:italic;color:rgba(255,255,255,.2);margin-right:.6rem}}
 
 /* ══ INNER PAGES ══ */
-.ipage{background:#000;color:#fff;overflow:hidden}
-.ipage .inner{
+.ipage{{background:#000;color:#fff;overflow:hidden}}
+.ipage .inner{{
   position:absolute;inset:0;
   overflow-y:auto;
   padding-top:5.5rem;
   padding-bottom:3rem;
-}
-.ipage .inner::-webkit-scrollbar{width:2px}
-.ipage .inner::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1)}
+}}
+.ipage .inner::-webkit-scrollbar{{width:2px}}
+.ipage .inner::-webkit-scrollbar-thumb{{background:rgba(255,255,255,.1)}}
 
-.eyebrow{
-  font-family:var(--sans);font-size:.52rem;
-  letter-spacing:.3em;text-transform:uppercase;
-  color:rgba(255,255,255,.27);margin-bottom:1.6rem;
-}
-.pg-title{
-  font-family:var(--serif);
-  font-size:clamp(2.8rem,5vw,5.5rem);
-  font-weight:300;line-height:1.05;
-  margin-bottom:2.5rem;color:#fff;
-}
-.pg-title em{font-style:italic}
-.pg-rule{width:34px;height:1px;background:rgba(255,255,255,.13);margin-bottom:2rem}
-.sec-lbl{
-  font-family:var(--sans);font-size:.52rem;
-  letter-spacing:.28em;text-transform:uppercase;
-  color:rgba(255,255,255,.22);
-  margin-bottom:1.4rem;
-  display:flex;align-items:center;gap:1.5rem;
-}
-.sec-lbl::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
-.ghost-link{
-  font-size:.53rem;letter-spacing:.18em;text-transform:uppercase;
-  color:rgba(255,255,255,.38);
-  border-bottom:1px solid rgba(255,255,255,.12);
-  padding-bottom:2px;cursor:pointer;transition:color .2s;
-}
-.ghost-link:hover{color:#fff}
+.eyebrow{{font-family:var(--sans);font-size:.52rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.27);margin-bottom:1.6rem}}
+.pg-title{{font-family:var(--serif);font-size:clamp(2.8rem,5vw,5.5rem);font-weight:300;line-height:1.05;margin-bottom:2.5rem;color:#fff}}
+.pg-title em{{font-style:italic}}
+.pg-rule{{width:34px;height:1px;background:rgba(255,255,255,.13);margin-bottom:2rem}}
+.sec-lbl{{font-family:var(--sans);font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:1.4rem;display:flex;align-items:center;gap:1.5rem}}
+.sec-lbl::after{{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}}
+.ghost-link{{font-size:.53rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.38);border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:2px;cursor:pointer;transition:color .2s}}
+.ghost-link:hover{{color:#fff}}
 
 /* ══ MASON PAGE ══ */
-#page-mason .inner{
+#page-mason .inner{{
   padding:0;overflow:hidden;
   display:grid;grid-template-columns:1fr 1fr;
-}
-.mason-img{overflow:hidden;height:100vh}
-.mason-img img{
+}}
+.mason-img{{overflow:hidden;height:100vh}}
+.mason-img img{{
   width:100%;height:100%;object-fit:cover;display:block;
   filter:grayscale(100%) contrast(1.08);transition:filter 1.4s;
-}
-.mason-img:hover img{filter:grayscale(15%)}
-.mason-text{
+}}
+.mason-img:hover img{{filter:grayscale(15%)}}
+.mason-text{{
   padding:clamp(5rem,9vh,7rem) clamp(2rem,4vw,4rem);
   display:flex;flex-direction:column;justify-content:center;
   border-left:1px solid rgba(255,255,255,.07);overflow-y:auto;
-}
-.pg-body{
+}}
+.pg-body{{
   font-family:var(--sans);font-size:.75rem;
   font-weight:300;line-height:2.1;
   color:rgba(255,255,255,.42);
-  max-width:380px;margin-bottom:2.8rem;
-}
-.creds{
-  display:flex;flex-direction:column;
-  border-top:1px solid rgba(255,255,255,.07);
-  padding-top:1.8rem;gap:.9rem;
-}
-.cred-row{
-  display:flex;justify-content:space-between;align-items:baseline;
-  padding-bottom:.9rem;border-bottom:1px solid rgba(255,255,255,.04);
-}
-.cred-row .k{
-  font-family:var(--sans);font-size:.51rem;
-  letter-spacing:.2em;text-transform:uppercase;
-  color:rgba(255,255,255,.22);
-}
-.cred-row .v{
-  font-family:var(--serif);font-size:.88rem;
-  font-style:italic;color:rgba(255,255,255,.5);text-align:right;
-}
-.cred-row .v a{
-  color:rgba(255,255,255,.45);
-  border-bottom:1px solid rgba(255,255,255,.12);
-  transition:color .2s;
-}
-.cred-row .v a:hover{color:#fff}
-.social-row{display:flex;gap:1.5rem;margin-top:2rem}
-.social-link{
-  font-family:var(--sans);font-size:.52rem;
-  letter-spacing:.2em;text-transform:uppercase;
-  color:rgba(255,255,255,.3);
-  border-bottom:1px solid rgba(255,255,255,.1);
-  padding-bottom:2px;transition:color .2s,border-color .2s;
-}
-.social-link:hover{color:#fff;border-color:rgba(255,255,255,.5)}
+  max-width:400px;margin-bottom:2.8rem;
+}}
+.pg-body strong{{color:rgba(255,255,255,.65);font-weight:400}}
+.creds{{display:flex;flex-direction:column;border-top:1px solid rgba(255,255,255,.07);padding-top:1.8rem;gap:.9rem}}
+.cred-row{{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:.9rem;border-bottom:1px solid rgba(255,255,255,.04)}}
+.cred-row .k{{font-family:var(--sans);font-size:.51rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.22)}}
+.cred-row .v{{font-family:var(--serif);font-size:.88rem;font-style:italic;color:rgba(255,255,255,.5);text-align:right}}
+.cred-row .v a{{color:rgba(255,255,255,.45);border-bottom:1px solid rgba(255,255,255,.12);transition:color .2s}}
+.cred-row .v a:hover{{color:#fff}}
+.social-row{{display:flex;gap:1.5rem;margin-top:2rem}}
+.social-link{{font-family:var(--sans);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3);border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:2px;transition:color .2s,border-color .2s}}
+.social-link:hover{{color:#fff;border-color:rgba(255,255,255,.5)}}
 
 /* ══ FILM PAGE ══ */
-.film-hd{padding:0 clamp(1.5rem,5vw,4rem) 2rem}
-.reel-wrap{padding:0 clamp(1.5rem,5vw,4rem);margin-bottom:2.5rem}
-.reel-frame{
-  position:relative;width:100%;aspect-ratio:16/9;
-  background:#0a0a0a;border:1px solid rgba(255,255,255,.06);
-}
-.reel-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-
-.film-grid-wrap{padding:0 clamp(1.5rem,5vw,4rem)}
-.film-grid{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:3px;background:rgba(255,255,255,.04);
-}
-.f-card{
-  position:relative;aspect-ratio:16/9;
-  background:#0c0c0c;overflow:hidden;
-}
-.f-card iframe{
-  position:absolute;inset:0;width:100%;height:100%;border:0;
-}
-/* hover label overlay */
-.f-card-info{
+.film-hd{{padding:0 clamp(1.5rem,5vw,4rem) 2rem}}
+.reel-wrap{{padding:0 clamp(1.5rem,5vw,4rem);margin-bottom:2.5rem}}
+.reel-frame{{position:relative;width:100%;aspect-ratio:16/9;background:#0a0a0a;border:1px solid rgba(255,255,255,.06)}}
+.reel-frame iframe{{position:absolute;inset:0;width:100%;height:100%;border:0}}
+.film-grid-wrap{{padding:0 clamp(1.5rem,5vw,4rem)}}
+.film-grid{{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:rgba(255,255,255,.04)}}
+.f-card{{position:relative;aspect-ratio:16/9;background:#0c0c0c;overflow:hidden}}
+.f-card iframe{{position:absolute;inset:0;width:100%;height:100%;border:0}}
+.f-card-info{{
   position:absolute;bottom:0;left:0;right:0;
   padding:1.2rem;
   background:linear-gradient(transparent,rgba(0,0,0,.92));
-  transform:translateY(100%);
-  transition:transform .38s ease;
-  pointer-events:none;
-  z-index:2;
-}
-.f-card:hover .f-card-info{transform:translateY(0)}
-.f-card-title{
-  font-family:var(--serif);font-size:1rem;font-weight:400;
-  color:#fff;margin-bottom:.2rem;
-}
-.f-card-meta{
-  font-size:.51rem;letter-spacing:.18em;
-  text-transform:uppercase;color:rgba(255,255,255,.38);
-}
+  transform:translateY(100%);transition:transform .38s ease;
+  pointer-events:none;z-index:2;
+}}
+.f-card:hover .f-card-info{{transform:translateY(0)}}
+.f-card-title{{font-family:var(--serif);font-size:1rem;font-weight:400;color:#fff;margin-bottom:.2rem}}
+.f-card-meta{{font-size:.51rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.38)}}
 
-/* ══ PHOTO PAGE ══ */
-.photo-hd{
-  padding:0 clamp(1.5rem,5vw,4rem) 2.5rem;
+/* ══ PHOTO PAGE — vertical stack ══ */
+.photo-hd{{
+  padding:0 clamp(1.5rem,5vw,4rem) 2rem;
   display:flex;justify-content:space-between;align-items:flex-end;gap:3rem;
-}
-.photo-hd-q{
-  font-family:var(--serif);
-  font-size:clamp(.9rem,1.2vw,1.1rem);
-  font-style:italic;font-weight:300;
-  color:rgba(255,255,255,.27);
+}}
+.photo-hd-q{{
+  font-family:var(--serif);font-size:clamp(.9rem,1.2vw,1.1rem);
+  font-style:italic;font-weight:300;color:rgba(255,255,255,.27);
   max-width:270px;line-height:1.7;text-align:right;
-}
+}}
 
-/* 
-  Photo mosaic — 6 real photos laid out in a dynamic grid 
-  Row 1: wide landscape (cliff jump) | tall portrait (Ourfield poster)
-  Row 2: square (b&w city) | square (bike) | tall (baseball kid)
-  Row 3: wide (football helmet)
-*/
-.mosaic{
+/* Each photo fills full column width, same height, upright */
+.photo-stack{{
   padding:0 clamp(1.5rem,5vw,4rem);
-  display:grid;
-  grid-template-columns:repeat(12,1fr);
-  grid-auto-rows:auto;
+  display:flex;
+  flex-direction:column;
   gap:3px;
-}
-.ph{overflow:hidden;cursor:zoom-in;position:relative}
-.ph img{
-  width:100%;height:100%;object-fit:cover;display:block;
-  transition:transform .8s ease, filter .6s ease;
-}
-.ph:hover img{transform:scale(1.04)}
+}}
+.ps-item{{
+  width:100%;
+  /* Fixed height so all are the same size */
+  height:70vh;
+  overflow:hidden;
+  cursor:zoom-in;
+  flex-shrink:0;
+}}
+.ps-item img{{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center top;
+  display:block;
+  transition:transform .8s ease;
+}}
+.ps-item:hover img{{transform:scale(1.02)}}
 
-/* Layout assignments */
-/* ph1 — cliff jump waterfall (portrait) — tall left */
-.ph1{grid-column:1/6;grid-row:1/3;aspect-ratio:2/3}
-/* ph2 — Ourfield poster (portrait) */
-.ph2{grid-column:6/9;grid-row:1;aspect-ratio:3/4}
-/* ph3 — football helmet (portrait dark) */
-.ph3{grid-column:9/13;grid-row:1;aspect-ratio:3/4}
-/* ph4 — B&W city skyline (landscape) */
-.ph4{grid-column:6/10;grid-row:2;aspect-ratio:4/3}
-/* ph5 — bike rider B&W (portrait) */
-.ph5{grid-column:10/13;grid-row:2;aspect-ratio:2/3}
-/* ph6 — baseball kid B&W (landscape) */
-.ph6{grid-column:1/13;grid-row:3;aspect-ratio:21/9;max-height:340px}
-
-.photo-ft{
+.photo-ft{{
   padding:1.4rem clamp(1.5rem,5vw,4rem) 0;
   display:flex;justify-content:space-between;align-items:center;
-}
-.photo-ft p{
-  font-size:.53rem;letter-spacing:.2em;
-  text-transform:uppercase;color:rgba(255,255,255,.18);
-}
+}}
+.photo-ft p{{font-size:.53rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.18)}}
 
 /* ══ FUN PAGE ══ */
-.fun-hd{
-  padding:0 clamp(1.5rem,5vw,4rem) 2rem;
-  border-bottom:1px solid rgba(255,255,255,.05);
-}
-.fun-grid{
-  padding:2rem clamp(1.5rem,5vw,4rem);
-  display:grid;grid-template-columns:repeat(4,1fr);gap:3px;
-}
-.fun-card{
-  position:relative;aspect-ratio:3/4;
-  background:#0d0d0d;overflow:hidden;cursor:pointer;
-}
-.fun-card img{
-  width:100%;height:100%;object-fit:cover;display:block;
-  filter:grayscale(20%);transition:filter .7s,transform .9s;
-}
-.fun-card:hover img{filter:grayscale(0%);transform:scale(1.05)}
-.fun-card-lbl{
-  position:absolute;bottom:0;left:0;right:0;
-  padding:1rem;
-  background:linear-gradient(transparent,rgba(0,0,0,.92));
-  font-family:var(--serif);font-size:.88rem;
-  font-style:italic;color:rgba(255,255,255,.6);
-}
+.fun-hd{{padding:0 clamp(1.5rem,5vw,4rem) 2rem;border-bottom:1px solid rgba(255,255,255,.05)}}
+.fun-grid{{padding:2rem clamp(1.5rem,5vw,4rem);display:grid;grid-template-columns:repeat(4,1fr);gap:3px}}
+.fun-card{{position:relative;aspect-ratio:3/4;background:#0d0d0d;overflow:hidden;cursor:pointer}}
+.fun-card img{{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;filter:grayscale(20%);transition:filter .7s,transform .9s}}
+.fun-card:hover img{{filter:grayscale(0%);transform:scale(1.05)}}
+.fun-card-lbl{{position:absolute;bottom:0;left:0;right:0;padding:1rem;background:linear-gradient(transparent,rgba(0,0,0,.92));font-family:var(--serif);font-size:.88rem;font-style:italic;color:rgba(255,255,255,.6)}}
 
 /* ── Lightbox ── */
-#lb{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.97);
-  z-index:99990;align-items:center;justify-content:center;
-}
-#lb.open{display:flex}
-#lb img{max-width:90vw;max-height:90vh;object-fit:contain;display:block}
-#lb-x{
-  position:absolute;top:2rem;right:2.4rem;
-  font-family:var(--sans);font-size:.52rem;
-  letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(255,255,255,.3);cursor:pointer;
-  background:none;border:none;transition:color .2s;
-}
-#lb-x:hover{color:#fff}
+#lb{{display:none;position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:99990;align-items:center;justify-content:center}}
+#lb.open{{display:flex}}
+#lb img{{max-width:90vw;max-height:90vh;object-fit:contain;display:block}}
+#lb-x{{position:absolute;top:2rem;right:2.4rem;font-family:var(--sans);font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.3);cursor:pointer;background:none;border:none;transition:color .2s}}
+#lb-x:hover{{color:#fff}}
 
-@media(max-width:800px){
-  #page-mason .inner{grid-template-columns:1fr;overflow-y:auto}
-  .mason-img{height:50vh}
-  .film-grid{grid-template-columns:1fr}
-  .fun-grid{grid-template-columns:1fr 1fr}
-  .photo-hd{flex-direction:column;align-items:flex-start;gap:1rem}
-  .photo-hd-q{text-align:left}
-  .mosaic{grid-template-columns:1fr 1fr}
-  .ph1{grid-column:1/3;grid-row:auto;aspect-ratio:4/3}
-  .ph2,.ph3,.ph4,.ph5{grid-column:span 1;grid-row:auto;aspect-ratio:1/1}
-  .ph6{grid-column:1/3;grid-row:auto;aspect-ratio:16/9;max-height:none}
-}
+@media(max-width:800px){{
+  #page-mason .inner{{grid-template-columns:1fr;overflow-y:auto}}
+  .mason-img{{height:50vh}}
+  .film-grid{{grid-template-columns:1fr}}
+  .fun-grid{{grid-template-columns:1fr 1fr}}
+  .photo-hd{{flex-direction:column;align-items:flex-start;gap:1rem}}
+  .photo-hd-q{{text-align:left}}
+  .ps-item{{height:50vh}}
+}}
 </style>
 </head>
 <body>
 
 <div id="cur"></div>
-
 <div id="mc-logo" onclick="goHome()">MC</div>
 <div id="work-btn" onclick="toggleNav(event)">Work <span class="chev"></span></div>
 <div id="close-btn" onclick="goHome()">Close</div>
@@ -444,16 +319,15 @@ a{color:inherit;text-decoration:none}
 <div class="page ipage" id="page-mason">
   <div class="inner">
     <div class="mason-img">
-      <!-- Football helmet portrait — dramatic, cinematic, fits the dark aesthetic -->
-      <img src="DSC08960.JPG" alt="Mason Clark"/>
+      <img src="{imgs['DSC08960']}" alt="Mason Clark"/>
     </div>
     <div class="mason-text">
       <p class="eyebrow">01 &nbsp;/&nbsp; Mason Clark</p>
       <div class="pg-rule"></div>
       <h2 class="pg-title">Director,<br><em>Filmmaker</em>,<br>Creative Dir.</h2>
       <p class="pg-body">
-        New York–based director, filmmaker, and creative director. Work spans narrative film, music videos, and brand identity for emerging and established names. A decade across editorial and creative environments — a singular visual language applied to every project.<br><br>
-        Clients across music, fashion, and culture. Available for select projects worldwide.
+        Mason Clark is a NYC based filmmaker and creative director. His journey to film started with an idea of exposing the injustices of access to government programming in Latin America. From that birthed the documentary <strong><em>Ourfield</em></strong>, co-directed with Columbia filmmaker Leonardo Scarpato.<br><br>
+        Now he is crafting projects all around the world — from commercials, to art house films, to travel photography. Most recently, Mason produced <strong><em>The CVC Playbook</em></strong>, Counter Part Ventures' signature program for Counter Club.
       </p>
       <div class="creds">
         <div class="cred-row"><span class="k">Based</span><span class="v">New York, NY</span></div>
@@ -477,51 +351,25 @@ a{color:inherit;text-decoration:none}
       <div class="pg-rule"></div>
       <h2 class="pg-title"><em>Moving</em> Image</h2>
     </div>
-
-    <!-- Showreel -->
     <div class="reel-wrap">
       <div class="sec-lbl">Showreel</div>
       <div class="reel-frame">
-        <iframe
-          src="https://www.youtube.com/embed/NRItFQyNo1E?rel=0&modestbranding=1"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen>
-        </iframe>
+        <iframe src="https://www.youtube.com/embed/NRItFQyNo1E?rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
       </div>
     </div>
-
-    <!-- 3 real videos from @shotbymas -->
     <div class="film-grid-wrap">
       <div class="sec-lbl">Selected Work</div>
       <div class="film-grid">
-
         <div class="f-card">
-          <iframe
-            src="https://www.youtube.com/embed/MsHUQUdhR3Q?rel=0&modestbranding=1"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen loading="lazy">
-          </iframe>
-          <div class="f-card-info">
-            <p class="f-card-title">Our Field</p>
-            <p class="f-card-meta">Short Film &nbsp;·&nbsp; Dir. Mason Clark</p>
-          </div>
+          <iframe src="https://www.youtube.com/embed/MsHUQUdhR3Q?rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          <div class="f-card-info"><p class="f-card-title">Our Field</p><p class="f-card-meta">Documentary &nbsp;·&nbsp; Dir. Mason Clark</p></div>
         </div>
-
         <div class="f-card">
-          <iframe
-            src="https://www.youtube.com/embed/ZjjWBTxcb_o?rel=0&modestbranding=1"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen loading="lazy">
-          </iframe>
-          <div class="f-card-info">
-            <p class="f-card-title">Project</p>
-            <p class="f-card-meta">Film &nbsp;·&nbsp; Dir. Mason Clark</p>
-          </div>
+          <iframe src="https://www.youtube.com/embed/ZjjWBTxcb_o?rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          <div class="f-card-info"><p class="f-card-title">Project</p><p class="f-card-meta">Film &nbsp;·&nbsp; Dir. Mason Clark</p></div>
         </div>
-
       </div>
     </div>
-
     <div style="padding:1.5rem clamp(1.5rem,5vw,4rem) 0;text-align:right">
       <a class="ghost-link" href="https://youtube.com/@shotbymas" target="_blank" rel="noopener">Full channel on YouTube →</a>
     </div>
@@ -540,31 +388,13 @@ a{color:inherit;text-decoration:none}
       <p class="photo-hd-q">Every still frame is a held breath — a moment extracted from the relentless forward march of time.</p>
     </div>
 
-    <div class="mosaic">
-      <!-- ph1: cliff jump waterfall — DSC08751.jpg -->
-      <div class="ph ph1">
-        <img src="DSC08751.jpg" alt="Cliff jump waterfall"/>
-      </div>
-      <!-- ph2: Ourfield poster — OURFIELD.JPEG -->
-      <div class="ph ph2">
-        <img src="OURFIELD.JPEG" alt="Our Field film poster"/>
-      </div>
-      <!-- ph3: football helmet portrait — DSC08960.JPG -->
-      <div class="ph ph3">
-        <img src="DSC08960.JPG" alt="Football helmet portrait"/>
-      </div>
-      <!-- ph4: B&W city skyline / kids — IMG_0454_2.jpg -->
-      <div class="ph ph4">
-        <img src="IMG_0454_2.jpg" alt="City skyline"/>
-      </div>
-      <!-- ph5: bike rider B&W — IMG_0455_3.jpg -->
-      <div class="ph ph5">
-        <img src="IMG_0455_3.jpg" alt="Bike rider"/>
-      </div>
-      <!-- ph6: baseball kid B&W — IMG_0440.JPG -->
-      <div class="ph ph6">
-        <img src="IMG_0440.JPG" alt="Baseball"/>
-      </div>
+    <div class="photo-stack">
+      <div class="ps-item"><img src="{imgs['DSC08751']}"   alt="Cliff jump waterfall"/></div>
+      <div class="ps-item"><img src="{imgs['IMG_0454_2']}" alt="Cartagena city skyline"/></div>
+      <div class="ps-item"><img src="{imgs['IMG_0455_3']}" alt="Bike rider"/></div>
+      <div class="ps-item"><img src="{imgs['DSC08960']}"   alt="Football helmet portrait"/></div>
+      <div class="ps-item"><img src="{imgs['IMG_0440']}"   alt="Baseball"/></div>
+      <div class="ps-item"><img src="{imgs['OURFIELD']}"   alt="Our Field film poster"/></div>
     </div>
 
     <div class="photo-ft">
@@ -583,22 +413,10 @@ a{color:inherit;text-decoration:none}
       <h2 class="pg-title" style="font-size:clamp(2.5rem,4vw,5rem)">Personal<br><em>Work</em></h2>
     </div>
     <div class="fun-grid">
-      <div class="fun-card">
-        <img src="DSC08751.jpg" alt="Waterfall" loading="lazy"/>
-        <div class="fun-card-lbl">Cliff jump</div>
-      </div>
-      <div class="fun-card">
-        <img src="IMG_0454_2.jpg" alt="City" loading="lazy"/>
-        <div class="fun-card-lbl">Cartagena</div>
-      </div>
-      <div class="fun-card">
-        <img src="IMG_0440.JPG" alt="Baseball" loading="lazy"/>
-        <div class="fun-card-lbl">The game</div>
-      </div>
-      <div class="fun-card">
-        <img src="IMG_0455_3.jpg" alt="Bike" loading="lazy"/>
-        <div class="fun-card-lbl">On the road</div>
-      </div>
+      <div class="fun-card"><img src="{imgs['DSC08751']}"   alt="Waterfall" loading="lazy"/><div class="fun-card-lbl">Cliff jump</div></div>
+      <div class="fun-card"><img src="{imgs['IMG_0454_2']}" alt="City"      loading="lazy"/><div class="fun-card-lbl">Cartagena</div></div>
+      <div class="fun-card"><img src="{imgs['IMG_0440']}"   alt="Baseball"  loading="lazy"/><div class="fun-card-lbl">The game</div></div>
+      <div class="fun-card"><img src="{imgs['IMG_0455_3']}" alt="Bike"      loading="lazy"/><div class="fun-card-lbl">On the road</div></div>
     </div>
   </div>
 </div>
@@ -610,67 +428,52 @@ a{color:inherit;text-decoration:none}
 </div>
 
 <script>
-/* ── Cursor ── */
 const cur = document.getElementById('cur');
-document.addEventListener('mousemove', e => {
+document.addEventListener('mousemove', e => {{
   cur.style.left = e.clientX + 'px';
   cur.style.top  = e.clientY + 'px';
-});
+}});
 
-/* ── Pages ── */
-function showPage(id) {
+function showPage(id) {{
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   const home = id === 'home';
   document.getElementById('work-btn').style.display = home ? '' : 'none';
   document.getElementById('close-btn').classList.toggle('show', !home);
   closeNav();
-}
-function goHome()   { showPage('home'); }
-function goPage(id) { showPage(id); }
+}}
+function goHome()   {{ showPage('home'); }}
+function goPage(id) {{ showPage(id); }}
 
-/* ── Dropdown ── */
 let navOpen = false;
 const dropdown = document.getElementById('dropdown');
 const workBtn  = document.getElementById('work-btn');
+function openNav()  {{ navOpen=true;  dropdown.classList.add('open');    workBtn.classList.add('open'); }}
+function closeNav() {{ navOpen=false; dropdown.classList.remove('open'); workBtn.classList.remove('open'); }}
+function toggleNav(e) {{ e.stopPropagation(); navOpen ? closeNav() : openNav(); }}
+document.addEventListener('click', e => {{
+  if (navOpen && !dropdown.contains(e.target) && !workBtn.contains(e.target)) closeNav();
+}});
 
-function openNav() {
-  navOpen = true;
-  dropdown.classList.add('open');
-  workBtn.classList.add('open');
-}
-function closeNav() {
-  navOpen = false;
-  dropdown.classList.remove('open');
-  workBtn.classList.remove('open');
-}
-function toggleNav(e) {
-  e.stopPropagation();
-  navOpen ? closeNav() : openNav();
-}
-document.addEventListener('click', e => {
-  if (navOpen && !dropdown.contains(e.target) && !workBtn.contains(e.target)) {
-    closeNav();
-  }
-});
-
-/* ── Lightbox ── */
-document.querySelectorAll('.ph img').forEach(img => {
-  img.addEventListener('click', () => {
+document.querySelectorAll('.ps-item img').forEach(img => {{
+  img.addEventListener('click', () => {{
     document.getElementById('lb-img').src = img.src;
     document.getElementById('lb').classList.add('open');
-  });
-});
-function closeLb() { document.getElementById('lb').classList.remove('open'); }
-document.getElementById('lb').addEventListener('click', function(e) {
-  if (e.target === this) closeLb();
-});
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeLb(); closeNav(); }
-});
+  }});
+}});
+function closeLb() {{ document.getElementById('lb').classList.remove('open'); }}
+document.getElementById('lb').addEventListener('click', function(e) {{ if(e.target===this) closeLb(); }});
+document.addEventListener('keydown', e => {{ if(e.key==='Escape') {{ closeLb(); closeNav(); }} }});
 
-/* ── Init ── */
 showPage('home');
 </script>
 </body>
-</html>
+</html>'''
+
+os.remove('/mnt/user-data/outputs/mason-clark.html')
+with open('/mnt/user-data/outputs/mason-clark.html', 'w') as f:
+    f.write(html)
+
+size_mb = os.path.getsize('/mnt/user-data/outputs/mason-clark.html') / 1024 / 1024
+print(f"Done. File size: {size_mb:.2f} MB")
+EOF
